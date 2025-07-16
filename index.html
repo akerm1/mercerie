@@ -146,166 +146,6 @@
 
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1彼此
-
-System: I'm sorry, but it appears the code you provided was cut off. However, I understand your requirements and will provide the complete updated code with the following changes:
-
-1. **Preserve PC Version Style**: The desktop version (>768px) will maintain the original table layout with action buttons visible in the last column, as in the initial design.
-2. **Scrollable Table**: The products table will display only 5 products at a time, with a vertical scrollbar for additional products. This will be achieved by setting a fixed height for the table body and enabling overflow scrolling.
-3. **Fix Table Alignment**: The table data alignment issue (data shifting right relative to `<thead>`) will be corrected by restructuring the `displayProducts` function to ensure each table cell (`<td>`) aligns properly with its corresponding header (`<th>`).
-4. **Retain Mobile Swipe Functionality**: The swipe-to-reveal action buttons for mobile devices (≤768px) will remain as implemented in the previous version.
-
-Below is the complete updated code, incorporating these changes while maintaining the original artifact ID for continuity.
-
-<xaiArtifact artifact_id="1ce1d68c-813a-471e-8101-5b6b3737bb46" artifact_version_id="5ee2732d-fc77-4fc3-a555-68e3799c0635" title="index.html" contentType="text/html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Management System</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Login Form Styles */
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .login-form {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        .login-form h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #4a5568;
-            font-size: 28px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #4a5568;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .error-message {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            display: none;
-        }
-
-        /* Dashboard Styles */
-        .dashboard {
-            display: none;
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            color: #4a5568;
-            font-size: 28px;
-        }
-
-        .logout-btn {
-            background: #e53e3e;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: #c53030;
-        }
-
-        .stats-container {
-            display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
@@ -488,61 +328,6 @@ Below is the complete updated code, incorporating these changes while maintainin
             background: #2c5282;
         }
 
-        /* Scrollable Table */
-        .table-container {
-            max-height: 300px; /* Adjust height to show ~5 rows (assuming ~60px per row) */
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
-        }
-
-        /* Swipeable Row Styles for Mobile */
-        .table-row {
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-        .table-row .row-content {
-            display: flex;
-            width: 100%;
-        }
-
-        .table-row .row-data {
-            flex: 1;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .table-row .row-data td {
-            flex: 1;
-            min-width: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .table-row .actions {
-            display: flex;
-            align-items: center;
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 100%;
-            background: #f7fafc;
-            padding: 12px;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-
-        .table-row.swiped .actions {
-            transform: translateX(0);
-        }
-
-        .table-row.swiped {
-            transform: translateX(-100px);
-        }
-
         /* Modal Styles */
         .modal {
             display: none;
@@ -616,7 +401,7 @@ Below is the complete updated code, incorporating these changes while maintainin
             font-size: 18px;
         }
 
-        /* Responsive Design */
+        /* Mobile Responsive Design */
         @media (max-width: 768px) {
             .controls-row {
                 flex-direction: column;
@@ -635,34 +420,48 @@ Below is the complete updated code, incorporating these changes while maintainin
                 grid-template-columns: 1fr;
             }
 
+            .products-table {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                max-height: 400px;
+                overflow-y: auto;
+            }
+
             table {
                 font-size: 14px;
+                min-width: 700px; /* Ensures horizontal scrolling */
             }
 
             th, td {
                 padding: 8px;
+                min-width: 100px; /* Ensures columns don't collapse too much */
             }
 
-            /* Hide actions column header for mobile */
-            th:last-child {
-                display: none;
+            /* Sticky table headers for vertical scrolling */
+            th {
+                position: sticky;
+                top: 0;
+                z-index: 10;
             }
 
-            .table-row .row-data td {
-                flex: 1 1 30%;
+            /* Improve touch scrolling behavior */
+            .products-table::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
             }
 
-            .table-row .actions {
-                width: 100px;
-                display: flex;
-                gap: 5px;
+            .products-table::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 4px;
             }
-        }
 
-        /* Desktop-specific styles to preserve original layout */
-        @media (min-width: 769px) {
-            .table-row .actions {
-                display: none; /* Hide swipeable actions on desktop */
+            .products-table::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 4px;
+            }
+
+            .products-table::-webkit-scrollbar-thumb:hover {
+                background: #555;
             }
         }
     </style>
@@ -738,23 +537,21 @@ Below is the complete updated code, incorporating these changes while maintainin
                     <h3>Products</h3>
                 </div>
                 <div id="loadingIndicator" class="loading">Loading products...</div>
-                <div class="table-container">
-                    <table id="productsTable" style="display: none;">
-                        <thead>
-                            <tr>
-                                <th>Serial</th>
-                                <th>Name</th>
-                                <th>Category</th>
-                                <th>Buy Price</th>
-                                <th>Sell Price</th>
-                                <th>Min Price</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="productsTableBody">
-                        </tbody>
-                    </table>
-                </div>
+                <table id="productsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Serial</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Buy Price</th>
+                            <th>Sell Price</th>
+                            <th>Min Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -946,6 +743,7 @@ Below is the complete updated code, incorporating these changes while maintainin
                 return;
             }
 
+            // Prepare data for Excel
             const excelData = products.map(product => ({
                 'Serial Number': product.serial,
                 'Product Name': product.name,
@@ -956,9 +754,11 @@ Below is the complete updated code, incorporating these changes while maintainin
                 'Created Date': product.createdAt ? new Date(product.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'
             }));
 
+            // Create workbook and worksheet
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(excelData);
 
+            // Auto-size columns
             const colWidths = [];
             const headers = Object.keys(excelData[0]);
             headers.forEach((header, index) => {
@@ -970,11 +770,14 @@ Below is the complete updated code, incorporating these changes while maintainin
             });
             ws['!cols'] = colWidths;
 
+            // Add worksheet to workbook
             XLSX.utils.book_append_sheet(wb, ws, 'Products');
 
+            // Generate filename with current date
             const date = new Date();
             const filename = `products_export_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.xlsx`;
 
+            // Download file
             XLSX.writeFile(wb, filename);
         }
 
@@ -999,6 +802,7 @@ Below is the complete updated code, incorporating these changes while maintainin
             categoryModal.style.display = 'none';
         });
 
+        // Close modals when clicking outside
         window.addEventListener('click', (e) => {
             if (e.target === productModal) {
                 productModal.style.display = 'none';
@@ -1024,11 +828,13 @@ Below is the complete updated code, incorporating these changes while maintainin
             const sellPrice = parseFloat(document.getElementById('productSellPrice').value);
             const minPrice = parseFloat(document.getElementById('productMinPrice').value);
 
+            // Validation
             if (!serial || !name || !category) {
                 alert('Please fill in all required fields.');
                 return;
             }
 
+            // Check if product serial already exists (only for new products)
             if (!editingProductId) {
                 const existingProduct = products.find(p => p.serial.toLowerCase() === serial.toLowerCase());
                 if (existingProduct) {
@@ -1049,12 +855,14 @@ Below is the complete updated code, incorporating these changes while maintainin
 
             try {
                 if (editingProductId) {
+                    // Update existing product
                     await updateDoc(doc(db, 'products', editingProductId), {
                         ...productData,
                         updatedAt: new Date()
                     });
                     alert('Product updated successfully!');
                 } else {
+                    // Add new product
                     await addDoc(collection(db, 'products'), {
                         ...productData,
                         createdAt: new Date()
@@ -1088,6 +896,7 @@ Below is the complete updated code, incorporating these changes while maintainin
                 return;
             }
 
+            // Check if category already exists
             const existingCategory = categories.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
             if (existingCategory) {
                 alert('Category already exists.');
@@ -1168,52 +977,22 @@ Below is the complete updated code, incorporating these changes while maintainin
 
             filteredProducts.forEach(product => {
                 const row = document.createElement('tr');
-                row.classList.add('table-row');
 
-                // Conditional rendering based on screen size
-                if (window.innerWidth <= 768) {
-                    // Mobile layout with swipeable actions
-                    row.innerHTML = `
-                        <td colspan="7">
-                            <div class="row-content">
-                                <div class="row-data">
-                                    <td>${product.serial}</td>
-                                    <td>${product.name}</td>
-                                    <td>${product.category}</td>
-                                    <td>${product.buyPrice.toFixed(2)} DZD</td>
-                                    <td>${product.sellPrice.toFixed(2)} DZD</td>
-                                    <td>${product.minPrice.toFixed(2)} DZD</td>
-                                </div>
-                                <div class="actions">
-                                    <button class="modify-btn" onclick="editProduct('${product.id}')">Modify</button>
-                                    <button class="delete-btn" onclick="deleteProduct('${product.id}')">Delete</button>
-                                </div>
-                            </div>
-                        </td>
-                    `;
-                } else {
-                    // Desktop layout with actions in the last column
-                    row.innerHTML = `
-                        <td>${product.serial}</td>
-                        <td>${product.name}</td>
-                        <td>${product.category}</td>
-                        <td>${product.buyPrice.toFixed(2)} DZD</td>
-                        <td>${product.sellPrice.toFixed(2)} DZD</td>
-                        <td>${product.minPrice.toFixed(2)} DZD</td>
-                        <td>
-                            <button class="modify-btn" onclick="editProduct('${product.id}')">Modify</button>
-                            <button class="delete-btn" onclick="deleteProduct('${product.id}')">Delete</button>
-                        </td>
-                    `;
-                }
+                row.innerHTML = `
+                    <td>${product.serial}</td>
+                    <td>${product.name}</td>
+                    <td>${product.category}</td>
+                    <td>${product.buyPrice.toFixed(2)} DZD</td>
+                    <td>${product.sellPrice.toFixed(2)} DZD</td>
+                    <td>${product.minPrice.toFixed(2)} DZD</td>
+                    <td>
+                        <button class="modify-btn" onclick="editProduct('${product.id}')">Modify</button>
+                        <button class="delete-btn" onclick="deleteProduct('${product.id}')">Delete</button>
+                    </td>
+                `;
 
                 productsTableBody.appendChild(row);
             });
-
-            // Add swipe listeners for mobile
-            if (window.innerWidth <= 768) {
-                addSwipeListeners();
-            }
         }
 
         function filterProducts() {
@@ -1229,6 +1008,7 @@ Below is the complete updated code, incorporating these changes while maintainin
         }
 
         function updateCategoryDropdowns() {
+            // Update category filter dropdown
             categoryFilter.innerHTML = '<option value="">All Categories</option>';
             const productCategorySelect = document.getElementById('productCategory');
             productCategorySelect.innerHTML = '<option value="">Select Category</option>';
@@ -1258,6 +1038,7 @@ Below is the complete updated code, incorporating these changes while maintainin
             productModalTitle.textContent = 'Edit Product';
             productSubmitBtn.textContent = 'Update Product';
 
+            // Populate form fields
             document.getElementById('productSerial').value = product.serial;
             document.getElementById('productName').value = product.name;
             document.getElementById('productCategory').value = product.category;
@@ -1287,71 +1068,12 @@ Below is the complete updated code, incorporating these changes while maintainin
             }
         };
 
-        // Swipe functionality for mobile
-        function addSwipeListeners() {
-            const rows = document.querySelectorAll('.table-row');
-            rows.forEach(row => {
-                let startX = 0;
-                let currentX = 0;
-                let isSwiping = false;
-
-                row.addEventListener('touchstart', (e) => {
-                    startX = e.touches[0].clientX;
-                    isSwiping = true;
-                    row.classList.remove('swiped');
-                });
-
-                row.addEventListener('touchmove', (e) => {
-                    if (!isSwiping) return;
-                    currentX = e.touches[0].clientX;
-                    const diffX = startX - currentX;
-                    if (diffX > 0 && diffX <= 100) {
-                        row.style.transform = `translateX(-${diffX}px)`;
-                    }
-                });
-
-                row.addEventListener('touchend', () => {
-                    isSwiping = false;
-                    const diffX = startX - currentX;
-                    if (diffX > 50) {
-                        row.classList.add('swiped');
-                        row.style.transform = 'translateX(-100px)';
-                    } else {
-                        row.classList.remove('swiped');
-                        row.style.transform = 'translateX(0)';
-                    }
-                });
-
-                // Click to toggle swipe for non-touch devices
-                row.addEventListener('click', (e) => {
-                    if (window.innerWidth <= 768 && !e.target.classList.contains('modify-btn') && !e.target.classList.contains('delete-btn')) {
-                        if (row.classList.contains('swiped')) {
-                            row.classList.remove('swiped');
-                            row.style.transform = 'translateX(0)';
-                        } else {
-                            rows.forEach(r => {
-                                r.classList.remove('swiped');
-                                r.style.transform = 'translateX(0)';
-                            });
-                            row.classList.add('swiped');
-                            row.style.transform = 'translateX(-100px)';
-                        }
-                    }
-                });
-            });
-        }
-
         // Filter event listeners
         searchFilter.addEventListener('input', () => {
             displayProducts();
         });
 
         categoryFilter.addEventListener('change', () => {
-            displayProducts();
-        });
-
-        // Window resize listener to update table layout
-        window.addEventListener('resize', () => {
             displayProducts();
         });
 
