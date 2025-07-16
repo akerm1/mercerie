@@ -328,6 +328,54 @@
             background: #2c5282;
         }
 
+        /* Swipeable Row Styles */
+        .table-row {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .table-row .row-content {
+            display: flex;
+            width: 100%;
+        }
+
+        .table-row .row-data {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .table-row .row-data td {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .table-row .actions {
+            display: flex;
+            align-items: center;
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background: #f7fafc;
+            padding: 12px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .table-row.swiped .actions {
+            transform: translateX(0);
+        }
+
+        .table-row.swiped {
+            transform: translateX(-100px);
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -427,6 +475,25 @@
             th, td {
                 padding: 8px;
             }
+
+            /* Hide actions column header and adjust table for swipe */
+            th:last-child {
+                display: none;
+            }
+
+            td:last-child {
+                display: none;
+            }
+
+            .table-row .row-data td {
+                flex: 1 1 30%;
+            }
+
+            .table-row .actions {
+                width: 100px;
+                display: flex;
+                gap: 5px;
+            }
         }
     </style>
 </head>
@@ -467,8 +534,6 @@
                 </div>
             </div>
 
-
-
             <!-- Controls -->
             <div class="controls">
                 <div class="controls-row">
@@ -483,15 +548,15 @@
                         </select>
                     </div>
                     <div class="control-group">
-                        <label>&nbsp;</label>
+                        <label> </label>
                         <button id="addProductBtn" class="btn-secondary">Add Product</button>
                     </div>
                     <div class="control-group">
-                        <label>&nbsp;</label>
+                        <label> </label>
                         <button id="addCategoryBtn" class="btn-category">Add Category</button>
                     </div>
                     <div class="control-group">
-                        <label>&nbsp;</label>
+                        <label> </label>
                         <button id="exportBtn" class="btn-export">Export to Excel</button>
                     </div>
                 </div>
@@ -527,7 +592,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="productModalTitle">Add New Product</h3>
-                <span class="close" id="closeProductModal">&times;</span>
+                <span class="close" id="closeProductModal">×</span>
             </div>
             <form id="productForm">
                 <div class="form-row">
@@ -574,7 +639,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Add New Category</h3>
-                <span class="close" id="closeCategoryModal">&times;</span>
+                <span class="close" id="closeCategoryModal">×</span>
             </div>
             <form id="categoryForm">
                 <div class="form-group">
@@ -709,7 +774,6 @@
                 return;
             }
 
-            // Prepare data for Excel
             const excelData = products.map(product => ({
                 'Serial Number': product.serial,
                 'Product Name': product.name,
@@ -720,11 +784,9 @@
                 'Created Date': product.createdAt ? new Date(product.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'
             }));
 
-            // Create workbook and worksheet
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(excelData);
 
-            // Auto-size columns
             const colWidths = [];
             const headers = Object.keys(excelData[0]);
             headers.forEach((header, index) => {
@@ -736,14 +798,11 @@
             });
             ws['!cols'] = colWidths;
 
-            // Add worksheet to workbook
             XLSX.utils.book_append_sheet(wb, ws, 'Products');
 
-            // Generate filename with current date
             const date = new Date();
             const filename = `products_export_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.xlsx`;
 
-            // Download file
             XLSX.writeFile(wb, filename);
         }
 
@@ -768,7 +827,6 @@
             categoryModal.style.display = 'none';
         });
 
-        // Close modals when clicking outside
         window.addEventListener('click', (e) => {
             if (e.target === productModal) {
                 productModal.style.display = 'none';
@@ -794,13 +852,11 @@
             const sellPrice = parseFloat(document.getElementById('productSellPrice').value);
             const minPrice = parseFloat(document.getElementById('productMinPrice').value);
 
-            // Validation
             if (!serial || !name || !category) {
                 alert('Please fill in all required fields.');
                 return;
             }
 
-            // Check if product serial already exists (only for new products)
             if (!editingProductId) {
                 const existingProduct = products.find(p => p.serial.toLowerCase() === serial.toLowerCase());
                 if (existingProduct) {
@@ -821,14 +877,12 @@
 
             try {
                 if (editingProductId) {
-                    // Update existing product
                     await updateDoc(doc(db, 'products', editingProductId), {
                         ...productData,
                         updatedAt: new Date()
                     });
                     alert('Product updated successfully!');
                 } else {
-                    // Add new product
                     await addDoc(collection(db, 'products'), {
                         ...productData,
                         createdAt: new Date()
@@ -862,7 +916,6 @@
                 return;
             }
 
-            // Check if category already exists
             const existingCategory = categories.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
             if (existingCategory) {
                 alert('Category already exists.');
@@ -943,22 +996,32 @@
 
             filteredProducts.forEach(product => {
                 const row = document.createElement('tr');
+                row.classList.add('table-row');
 
                 row.innerHTML = `
-                    <td>${product.serial}</td>
-                    <td>${product.name}</td>
-                    <td>${product.category}</td>
-                    <td>${product.buyPrice.toFixed(2)} DZD</td>
-                    <td>${product.sellPrice.toFixed(2)} DZD</td>
-                    <td>${product.minPrice.toFixed(2)} DZD</td>
                     <td>
-                        <button class="modify-btn" onclick="editProduct('${product.id}')">Modify</button>
-                        <button class="delete-btn" onclick="deleteProduct('${product.id}')">Delete</button>
+                        <div class="row-content">
+                            <div class="row-data">
+                                <td>${product.serial}</td>
+                                <td>${product.name}</td>
+                                <td>${product.category}</td>
+                                <td>${product.buyPrice.toFixed(2)} DZD</td>
+                                <td>${product.sellPrice.toFixed(2)} DZD</td>
+                                <td>${product.minPrice.toFixed(2)} DZD</td>
+                            </div>
+                            <div class="actions">
+                                <button class="modify-btn" onclick="editProduct('${product.id}')">Modify</button>
+                                <button class="delete-btn" onclick="deleteProduct('${product.id}')">Delete</button>
+                            </div>
+                        </div>
                     </td>
                 `;
 
                 productsTableBody.appendChild(row);
             });
+
+            // Add swipe functionality for mobile
+            addSwipeListeners();
         }
 
         function filterProducts() {
@@ -974,7 +1037,6 @@
         }
 
         function updateCategoryDropdowns() {
-            // Update category filter dropdown
             categoryFilter.innerHTML = '<option value="">All Categories</option>';
             const productCategorySelect = document.getElementById('productCategory');
             productCategorySelect.innerHTML = '<option value="">Select Category</option>';
@@ -1004,7 +1066,6 @@
             productModalTitle.textContent = 'Edit Product';
             productSubmitBtn.textContent = 'Update Product';
 
-            // Populate form fields
             document.getElementById('productSerial').value = product.serial;
             document.getElementById('productName').value = product.name;
             document.getElementById('productCategory').value = product.category;
@@ -1033,6 +1094,60 @@
                 }
             }
         };
+
+        // Swipe functionality
+        function addSwipeListeners() {
+            const rows = document.querySelectorAll('.table-row');
+            rows.forEach(row => {
+                let startX = 0;
+                let currentX = 0;
+                let isSwiping = false;
+
+                row.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    isSwiping = true;
+                    row.classList.remove('swiped');
+                });
+
+                row.addEventListener('touchmove', (e) => {
+                    if (!isSwiping) return;
+                    currentX = e.touches[0].clientX;
+                    const diffX = startX - currentX;
+                    if (diffX > 0 && diffX <= 100) {
+                        row.style.transform = `translateX(-${diffX}px)`;
+                    }
+                });
+
+                row.addEventListener('touchend', () => {
+                    isSwiping = false;
+                    const diffX = startX - currentX;
+                    if (diffX > 50) {
+                        row.classList.add('swiped');
+                        row.style.transform = 'translateX(-100px)';
+                    } else {
+                        row.classList.remove('swiped');
+                        row.style.transform = 'translateX(0)';
+                    }
+                });
+
+                // Click to toggle swipe for non-touch devices
+                row.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 768 && !e.target.classList.contains('modify-btn') && !e.target.classList.contains('delete-btn')) {
+                        if (row.classList.contains('swiped')) {
+                            row.classList.remove('swiped');
+                            row.style.transform = 'translateX(0)';
+                        } else {
+                            rows.forEach(r => {
+                                r.classList.remove('swiped');
+                                r.style.transform = 'translateX(0)';
+                            });
+                            row.classList.add('swiped');
+                            row.style.transform = 'translateX(-100px)';
+                        }
+                    }
+                });
+            });
+        }
 
         // Filter event listeners
         searchFilter.addEventListener('input', () => {
