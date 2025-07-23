@@ -260,6 +260,21 @@
             background: #6b46c1;
         }
 
+        .btn-reveal {
+            background: #3182ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .btn-reveal:hover {
+            background: #2c5282;
+        }
+
         .products-table {
             background: white;
             border-radius: 15px;
@@ -326,6 +341,19 @@
 
         .modify-btn:hover {
             background: #2c5282;
+        }
+
+        /* Blur effect for Buy Price */
+        .buy-price-cell {
+            transition: filter 0.3s ease;
+        }
+
+        .buy-price-cell.blurred {
+            filter: blur(5px);
+        }
+
+        .buy-price-cell.revealed {
+            filter: none;
         }
 
         /* Modal Styles */
@@ -540,6 +568,10 @@
                         <label> </label>
                         <button id="exportBtn" class="btn-export">Export to Excel</button>
                     </div>
+                    <div class="control-group">
+                        <label> </label>
+                        <button id="revealBuyPriceBtn" class="btn-reveal">Reveal Buy Price</button>
+                    </div>
                 </div>
             </div>
 
@@ -672,6 +704,7 @@
         let categories = [];
         let currentUser = null;
         let editingProductId = null;
+        let isBuyPriceRevealed = false;
 
         // DOM elements
         const loginScreen = document.getElementById('loginScreen');
@@ -684,6 +717,7 @@
         const addProductBtn = document.getElementById('addProductBtn');
         const addCategoryBtn = document.getElementById('addCategoryBtn');
         const exportBtn = document.getElementById('exportBtn');
+        const revealBuyPriceBtn = document.getElementById('revealBuyPriceBtn');
         const closeProductModal = document.getElementById('closeProductModal');
         const closeCategoryModal = document.getElementById('closeCategoryModal');
         const productForm = document.getElementById('productForm');
@@ -700,6 +734,12 @@
         // Filter elements
         const searchFilter = document.getElementById('searchFilter');
         const categoryFilter = document.getElementById('categoryFilter');
+
+        // Sanitize string to prevent syntax errors
+        function sanitize(str) {
+            if (typeof str !== 'string') return str;
+            return str.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/`/g, '\\`');
+        }
 
         // Auth state observer
         onAuthStateChanged(auth, (user) => {
@@ -741,6 +781,11 @@
             exportToExcel();
         });
 
+        // Reveal Buy Price handler
+        revealBuyPriceBtn.addEventListener('click', () => {
+            toggleBuyPriceVisibility();
+        });
+
         // Show/hide functions
         function showLogin() {
             loginScreen.style.display = 'flex';
@@ -759,6 +804,17 @@
 
         function hideError() {
             errorMessage.style.display = 'none';
+        }
+
+        // Toggle Buy Price visibility
+        function toggleBuyPriceVisibility() {
+            isBuyPriceRevealed = !isBuyPriceRevealed;
+            const buyPriceCells = document.querySelectorAll('.buy-price-cell');
+            buyPriceCells.forEach(cell => {
+                cell.classList.toggle('revealed', isBuyPriceRevealed);
+                cell.classList.toggle('blurred', !isBuyPriceRevealed);
+            });
+            revealBuyPriceBtn.textContent = isBuyPriceRevealed ? 'Hide Buy Price' : 'Reveal Buy Price';
         }
 
         // Export to Excel function
@@ -968,6 +1024,8 @@
                 let lowStockCount = 0;
                 querySnapshot.forEach((doc) => {
                     const p = doc.data();
+                    // Log product data to debug potential issues
+                    console.log('Product data:', p);
                     products.push({ id: doc.id, ...p });
                     // Safely handle missing quantity or minStockLevel
                     const quantity = p.quantity || 0;
@@ -1019,20 +1077,41 @@
             productsTableBody.innerHTML = '';
 
             filteredProducts.forEach(product => {
+                // Sanitize data to prevent syntax errors
+                const safeSerial = sanitize(product.serial || '');
+                const safeName = sanitize(product.name || '');
+                const safeCategory = sanitize(product.category || '');
+                const safeId = sanitize(product.id || '');
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${product.serial}</td>
-                    <td>${product.name}</td>
-                    <td>${product.category}</td>
-                    <td>${product.sellPrice.toFixed(2)} DZD</td>
-                    <td>${product.minPrice.toFixed(2)} DZD</td>
+                    <td>${safeSerial}</td>
+                    <td>${safeName}</td>
+                    <td>${safeCategory}</td>
+                    <td>${(product.sellPrice || 0).toFixed(2)} DZD</td>
+                    <td>${(product.minPrice || 0).toFixed(2)} DZD</td>
                     <td>
-                        <button class="modify-btn" onclick="editProduct('${product.id}')">Modify</button>
-                        <button class="delete-btn" onclick="deleteProduct('${product.id}')">Delete</button>
+                        <button class="modify-btn" data-id="${safeId}">Modify</button>
+                        <button class="delete-btn" data-id="${safeId}">Delete</button>
                     </td>
-                    <td>${product.buyPrice.toFixed(2)} DZD</td>
+                    <td class="buy-price-cell ${isBuyPriceRevealed ? 'revealed' : 'blurred'}">${(product.buyPrice || 0).toFixed(2)} DZD</td>
                 `;
                 productsTableBody.appendChild(row);
+            });
+
+            // Add event listeners for modify and delete buttons
+            document.querySelectorAll('.modify-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-id');
+                    editProduct(id);
+                });
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-id');
+                    deleteProduct(id);
+                });
             });
         }
 
@@ -1041,8 +1120,8 @@
             const categoryValue = categoryFilter.value;
 
             return products.filter(product => {
-                const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
-                                     product.serial.toLowerCase().includes(searchTerm);
+                const matchesSearch = (product.name || '').toLowerCase().includes(searchTerm) ||
+                                     (product.serial || '').toLowerCase().includes(searchTerm);
                 const matchesCategory = categoryValue ? product.category === categoryValue : true;
                 return matchesSearch && matchesCategory;
             });
@@ -1069,7 +1148,7 @@
         }
 
         // Edit product
-        window.editProduct = async function(id) {
+        async function editProduct(id) {
             const product = products.find(p => p.id === id);
             if (!product) {
                 alert('Product not found.');
@@ -1081,18 +1160,18 @@
             productSubmitBtn.textContent = 'Update Product';
 
             // Populate form fields
-            document.getElementById('productSerial').value = product.serial;
-            document.getElementById('productName').value = product.name;
-            document.getElementById('productCategory').value = product.category;
-            document.getElementById('productBuyPrice').value = product.buyPrice;
-            document.getElementById('productSellPrice').value = product.sellPrice;
-            document.getElementById('productMinPrice').value = product.minPrice;
+            document.getElementById('productSerial').value = product.serial || '';
+            document.getElementById('productName').value = product.name || '';
+            document.getElementById('productCategory').value = product.category || '';
+            document.getElementById('productBuyPrice').value = product.buyPrice || 0;
+            document.getElementById('productSellPrice').value = product.sellPrice || 0;
+            document.getElementById('productMinPrice').value = product.minPrice || 0;
 
             productModal.style.display = 'block';
-        };
+        }
 
         // Delete product
-        window.deleteProduct = async function(id) {
+        async function deleteProduct(id) {
             if (!currentUser) {
                 alert('Please log in to delete products.');
                 return;
@@ -1108,7 +1187,7 @@
                     alert(`Error deleting product: ${error.message}`);
                 }
             }
-        };
+        }
 
         // Filter event listeners
         searchFilter.addEventListener('input', () => {
