@@ -501,6 +501,18 @@
                     <h3>Total Products</h3>
                     <div class="number" id="totalProducts">0</div>
                 </div>
+                <div class="stat-card">
+                    <h3>Low Stock Items</h3>
+                    <div class="number" id="lowStockItems">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Investment</h3>
+                    <div class="number" id="totalInvestment">$0.00</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Categories</h3>
+                    <div class="number" id="totalCategories">0</div>
+                </div>
             </div>
 
             <!-- Controls -->
@@ -543,10 +555,10 @@
                             <th>Serial</th>
                             <th>Name</th>
                             <th>Category</th>
-                            <th>Buy Price</th>
                             <th>Sell Price</th>
                             <th>Min Price</th>
                             <th>Actions</th>
+                            <th>Buy Price</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
@@ -623,11 +635,25 @@
     <!-- Firebase SDKs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, updateDoc } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            addDoc,
+            deleteDoc,
+            doc,
+            query,
+            orderBy,
+            updateDoc
+        } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut
+        } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDDsE1HExXgGFTAaZW4rGWlxSq_hy_ogok",
             authDomain: "mercerie-f501e.firebaseapp.com",
@@ -637,10 +663,9 @@
             appId: "1:396755009614:web:891a177ed950d151c9431f"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         // Global variables
         let products = [];
@@ -939,11 +964,27 @@
                 const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
                 const querySnapshot = await getDocs(q);
                 products = [];
+                let totalInvestment = 0;
+                let lowStockCount = 0;
                 querySnapshot.forEach((doc) => {
-                    products.push({ id: doc.id, ...doc.data() });
+                    const p = doc.data();
+                    products.push({ id: doc.id, ...p });
+                    // Safely handle missing quantity or minStockLevel
+                    const quantity = p.quantity || 0;
+                    const buyPrice = p.buyPrice || 0;
+                    const minStockLevel = p.minStockLevel || 0;
+                    totalInvestment += quantity * buyPrice;
+                    if (quantity < minStockLevel) lowStockCount++;
                 });
                 displayProducts();
                 updateStats();
+                // Update DOM elements with null checks
+                const totalProductsEl = document.getElementById("totalProducts");
+                const lowStockItemsEl = document.getElementById("lowStockItems");
+                const totalInvestmentEl = document.getElementById("totalInvestment");
+                if (totalProductsEl) totalProductsEl.textContent = querySnapshot.size;
+                if (lowStockItemsEl) lowStockItemsEl.textContent = lowStockCount;
+                if (totalInvestmentEl) totalInvestmentEl.textContent = `$${totalInvestment.toFixed(2)}`;
             } catch (error) {
                 console.error('Error loading products:', error);
                 alert(`Error loading products: ${error.message}`);
@@ -964,6 +1005,8 @@
                     categories.push({ id: doc.id, ...doc.data() });
                 });
                 updateCategoryDropdowns();
+                const totalCategoriesEl = document.getElementById("totalCategories");
+                if (totalCategoriesEl) totalCategoriesEl.textContent = querySnapshot.size;
             } catch (error) {
                 console.error('Error loading categories:', error);
                 alert(`Error loading categories: ${error.message}`);
@@ -977,20 +1020,18 @@
 
             filteredProducts.forEach(product => {
                 const row = document.createElement('tr');
-
                 row.innerHTML = `
                     <td>${product.serial}</td>
                     <td>${product.name}</td>
                     <td>${product.category}</td>
-                    <td>${product.buyPrice.toFixed(2)} DZD</td>
                     <td>${product.sellPrice.toFixed(2)} DZD</td>
                     <td>${product.minPrice.toFixed(2)} DZD</td>
                     <td>
                         <button class="modify-btn" onclick="editProduct('${product.id}')">Modify</button>
                         <button class="delete-btn" onclick="deleteProduct('${product.id}')">Delete</button>
                     </td>
+                    <td>${product.buyPrice.toFixed(2)} DZD</td>
                 `;
-
                 productsTableBody.appendChild(row);
             });
         }
@@ -1023,7 +1064,8 @@
         }
 
         function updateStats() {
-            totalProducts.textContent = products.length;
+            const totalProductsEl = document.getElementById('totalProducts');
+            if (totalProductsEl) totalProductsEl.textContent = products.length;
         }
 
         // Edit product
